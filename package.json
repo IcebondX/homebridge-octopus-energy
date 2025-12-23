@@ -1,6 +1,6 @@
 {
   "name": "homebridge-octopus-energy",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Homebridge plugin to expose Octopus Energy smart meter import/export consumption to HomeKit",
   "license": "MIT",
   "repository": {
@@ -50,7 +50,7 @@
     "node-fetch": "^2.6.11"
   },
   "peerDependencies": {
-    "homebridge": ">=1.7.0"
+    "homebridge": ">=1.7.0 <3"
   },
   "devDependencies": {
     "homebridge": "^1.7.0",
