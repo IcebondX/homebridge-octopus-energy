@@ -4,7 +4,7 @@ Homebridge platform plugin that surfaces Octopus Energy SMETS2 import (and optio
 
 ## Requirements
 - Node.js >= 18
-- Homebridge >= 1.7
+- Homebridge >= 1.7 (Homebridge v2 beta supported)
 - Octopus API key plus MPAN and meter serial(s)
 
 ## Installation
