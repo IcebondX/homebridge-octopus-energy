@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { Characteristic, CharacteristicValue, PlatformAccessory, Service, WithUUID } from 'homebridge';
 import { OctopusEnergyPlatform } from './platform';
+import { buildLatestConsumptionUrl, buildTodayConsumptionUrl } from './octopusUrls';
 
 export type MeterSide = 'import' | 'export';
 
@@ -143,7 +144,8 @@ export class OctopusMeterAccessory {
   }
 
   private async fetchLatestWatts(): Promise<number> {
-    const url = `https://api.octopus.energy/v1/electricity-meter-points/${this.meter.mpan}/meters/${this.meter.meterSerial}/consumption/?page_size=1&order_by=-period_start`;
+    const url = buildLatestConsumptionUrl(this.meter.mpan, this.meter.meterSerial);
+    this.platform.log.debug(`Latest consumption URL for ${this.meter.name}: ${url}`);
 
     const response = await fetch(url, {
       headers: {
@@ -152,6 +154,8 @@ export class OctopusMeterAccessory {
     });
 
     if (!response.ok) {
+      const body = await response.text();
+      this.platform.log.warn(`HTTP ${response.status} ${body} for URL ${url}`);
       throw new Error(`HTTP ${response.status}`);
     }
 
@@ -186,18 +190,8 @@ export class OctopusMeterAccessory {
   }
 
   private async fetchTodayTotalKWh(): Promise<number> {
-    const now = new Date();
-    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
-
-    const params = new URLSearchParams({
-      page_size: '250',
-      order_by: 'period_start',
-      period_from: start.toISOString(),
-      period_to: end.toISOString(),
-    });
-
-    const url = `https://api.octopus.energy/v1/electricity-meter-points/${this.meter.mpan}/meters/${this.meter.meterSerial}/consumption/?${params.toString()}`;
+    const url = buildTodayConsumptionUrl(this.meter.mpan, this.meter.meterSerial);
+    this.platform.log.debug(`Today consumption URL for ${this.meter.name}: ${url}`);
 
     const response = await fetch(url, {
       headers: {
@@ -206,7 +200,8 @@ export class OctopusMeterAccessory {
     });
 
     if (!response.ok) {
-      this.platform.log.debug(`Total consumption request failed (${response.status}) for ${this.meter.name}: ${url}`);
+      const body = await response.text();
+      this.platform.log.warn(`HTTP ${response.status} ${body} for URL ${url}`);
       throw new Error(`HTTP ${response.status}`);
     }
 
