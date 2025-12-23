@@ -7,6 +7,10 @@
     "type": "git",
     "url": "https://github.com/icebondx/homebridge-octopus-energy.git"
   },
+  "homepage": "https://github.com/icebondx/homebridge-octopus-energy",
+  "bugs": {
+    "url": "https://github.com/icebondx/homebridge-octopus-energy/issues"
+  },
   "main": "dist/index.js",
   "files": [
     "dist",
@@ -16,7 +20,12 @@
     "homebridge-plugin",
     "octopus",
     "energy",
-    "electricity"
+    "electricity",
+    "homekit",
+    "octopus-energy",
+    "smart-meter",
+    "eve",
+    "power-monitoring"
   ],
   "engines": {
     "node": ">=18",
@@ -26,7 +35,16 @@
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -w -p tsconfig.json",
     "lint": "eslint src --ext .ts",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "prepare": "npm run build"
+  },
+  "homebridge": {
+    "platforms": [
+      {
+        "platform": "OctopusEnergyPlatform",
+        "name": "Octopus Energy"
+      }
+    ]
   },
   "dependencies": {
     "homebridge": "^1.7.0",

@@ -1,31 +1,25 @@
-﻿# Homebridge Octopus Energy
+# Homebridge Octopus Energy
 
-Homebridge dynamic platform plugin that surfaces Octopus Energy smart meter import (and optionally export) power into HomeKit. It polls the official Octopus REST API for the latest interval and converts consumption (kWh) into an average watts value per interval.
+Homebridge platform plugin that surfaces Octopus Energy SMETS2 import (and optional export) meters into HomeKit. It polls the Octopus public API, converts interval kWh readings into watts, and exposes Eve-style energy characteristics (instantaneous watts and today’s total kWh). Apple Home will show the Outlet accessory; rich energy data appears in Eve, Home+, and other advanced HomeKit apps.
 
-## What you get
-- Up to two accessories: **Octopus Import** (required) and **Octopus Export** (optional).
-- Primary service is an `Outlet` so it stays visible in Apple Home. Apple Home will not show the energy data.
-- Eve Energy-style characteristics for **instantaneous power (W)** and **today's total consumption (kWh)**. These display in Eve, Home+, and other advanced HomeKit apps.
-- Polls immediately on startup and then every `pollSeconds`.
-- Resilient logging and error handling; failures keep the last value instead of crashing Homebridge.
-
-### App support
-- Apple Home: shows the Outlet only (no power/energy UI).
-- Eve / Home+: show live watts and a rolling “today” total (kWh) via Eve custom characteristics.
+## Requirements
+- Node.js >= 18
+- Homebridge >= 1.7
+- Octopus API key plus MPAN and meter serial(s)
 
 ## Installation
+### Homebridge UI X
+1. Open **Config UI X** → **Plugins**.
+2. Search for `homebridge-octopus-energy`.
+3. Install and restart Homebridge.
+
+### npm (global)
 ```bash
-# inside this folder
-npm install
-npm run build
-# install globally into Homebridge
-npm install -g .
+npm i -g homebridge-octopus-energy
 ```
 
-Requires Node 18+ and Homebridge v1.7+.
-
 ## Configuration
-Add the platform block to your Homebridge `config.json`:
+Add to `config.json` (or use the UI form powered by `config.schema.json`):
 ```json
 {
   "platform": "OctopusEnergyPlatform",
@@ -45,26 +39,20 @@ Add the platform block to your Homebridge `config.json`:
 }
 ```
 
-Options:
-- `apiKey` (required): Octopus API key (username in Basic Auth; password blank).
-- `pollSeconds` (default 300, min 60): Polling interval in seconds.
-- `import` (required): MPAN + meter serial for your import meter.
-- `export` (optional): MPAN + meter serial for export; omit to skip export accessory.
+Notes:
+- Import is required; export is optional (requires both MPAN and meter serial).
+- Polls immediately on startup, then every `pollSeconds` (min 60s).
+- Eve characteristics expose live watts and a rolling “today” total (kWh). Apple Home won’t show these values, but Eve/Home+ will.
 
-## How it works
-- Calls `GET https://api.octopus.energy/v1/electricity-meter-points/{MPAN}/meters/{SERIAL}/consumption/?page_size=1&order_by=-period_start` with Basic Auth.
-- Accepts both `period_*` and `interval_*` fields.
-- Converts the latest interval `consumption` (kWh) to watts: `watts = (kWh * 1000) / hours_in_interval`. A 30-minute interval uses 0.5 hours, so `watts = kWh * 2000`.
-- Rolling daily total is calculated by summing today's intervals (UTC) from the same Octopus endpoint.
-- Updates HomeKit immediately and then every `pollSeconds`.
+## What it does
+- Calls the Octopus REST API for electricity consumption.
+- Converts the latest interval kWh to watts; sums today’s intervals for total kWh.
+- Exposes an `Outlet` service for Home visibility plus Eve Energy characteristics for power and total energy.
+- Keeps last values if the API fails and logs warnings instead of crashing.
 
-## Scripts
-- `npm run build` – compile TypeScript to `dist`.
-- `npm run watch` – watch & rebuild.
-- `npm run lint` – ESLint over `src`.
-- `npm run clean` – remove `dist`.
+## Links
+- GitHub: https://github.com/icebondx/homebridge-octopus-energy
+- Issues: https://github.com/icebondx/homebridge-octopus-energy/issues
 
-## Notes
-- If the Octopus API call fails, the accessory keeps the last good reading and logs a warning.
-- Export is only created when both `mpan` and `meterSerial` are supplied.
-- Daily total resets at midnight UTC and represents the sum of all intervals returned for today.
+## License
+MIT
