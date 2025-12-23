@@ -59,6 +59,18 @@ export class OctopusMeterAccessory {
     this.evePower = this.ensureEveCharacteristic(this.platform.Eve.Power);
     this.eveTotal = this.ensureEveCharacteristic(this.platform.Eve.TotalConsumption);
 
+    this.lastWatts = typeof this.accessory.context.lastWatts === 'number' ? this.accessory.context.lastWatts : 0;
+    this.lastTotalKWh = typeof this.accessory.context.totalKWh === 'number' ? this.accessory.context.totalKWh : 0;
+    this.updateCachedCharacteristics();
+
+    this.platform.api.on('shutdown', () => this.stopPolling());
+  }
+
+  public startPolling(): void {
+    if (this.timer) {
+      return;
+    }
+
     this.refreshNow().catch((error) => {
       this.platform.log.warn(`Initial fetch failed for ${this.meter.name}: ${error instanceof Error ? error.message : String(error)}`);
     });
@@ -68,8 +80,6 @@ export class OctopusMeterAccessory {
         this.platform.log.warn(`Refresh failed for ${this.meter.name}: ${error instanceof Error ? error.message : String(error)}`);
       });
     }, this.pollSeconds * 1000);
-
-    this.platform.api.on('shutdown', () => this.stopPolling());
   }
 
   public stopPolling(): void {
@@ -109,6 +119,7 @@ export class OctopusMeterAccessory {
       if (this.evePower) {
         this.evePower.updateValue(safeValue as CharacteristicValue);
       }
+      this.updateCachedCharacteristics();
       this.platform.log.debug(`${this.meter.name} Eve power updated to ${safeValue.toFixed(2)} W`);
     } catch (error) {
       this.platform.log.warn(`Failed to update power for ${this.meter.name}: ${error instanceof Error ? error.message : String(error)}`);
@@ -124,6 +135,7 @@ export class OctopusMeterAccessory {
       if (this.eveTotal) {
         this.eveTotal.updateValue(totalKWh as CharacteristicValue);
       }
+      this.updateCachedCharacteristics();
       this.platform.log.debug(`${this.meter.name} Eve total updated to ${totalKWh.toFixed(3)} kWh (today)`);
     } catch (error) {
       this.platform.log.warn(`Failed to update total consumption for ${this.meter.name}: ${error instanceof Error ? error.message : String(error)}`);
@@ -179,7 +191,7 @@ export class OctopusMeterAccessory {
     const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
 
     const params = new URLSearchParams({
-      page_size: '96',
+      page_size: '250',
       order_by: 'period_start',
       period_from: start.toISOString(),
       period_to: end.toISOString(),
@@ -194,6 +206,7 @@ export class OctopusMeterAccessory {
     });
 
     if (!response.ok) {
+      this.platform.log.debug(`Total consumption request failed (${response.status}) for ${this.meter.name}: ${url}`);
       throw new Error(`HTTP ${response.status}`);
     }
 
@@ -208,5 +221,14 @@ export class OctopusMeterAccessory {
     }
 
     return Math.max(0, Math.round(total * 1000) / 1000);
+  }
+
+  private updateCachedCharacteristics(): void {
+    if (this.evePower) {
+      this.evePower.updateValue(Math.max(0, this.lastWatts) as CharacteristicValue);
+    }
+    if (this.eveTotal) {
+      this.eveTotal.updateValue(Math.max(0, this.lastTotalKWh) as CharacteristicValue);
+    }
   }
 }

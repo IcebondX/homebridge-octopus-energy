@@ -40,6 +40,9 @@ export class OctopusEnergyPlatform implements DynamicPlatformPlugin {
     this.api.on(APIEvent.DID_FINISH_LAUNCHING, () => {
       this.log.debug('Finished launching, starting discovery');
       this.discoverMeters();
+      setTimeout(() => {
+        this.managed.forEach((meter) => meter.startPolling());
+      }, 15000);
     });
 
     this.api.on(APIEvent.SHUTDOWN, () => {
