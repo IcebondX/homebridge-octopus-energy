@@ -41,7 +41,7 @@
   "homebridge": {
     "platforms": [
       {
-        "platform": "OctopusEnergyPlatform",
+        "platform": "OctopusEnergy",
         "name": "Octopus Energy"
       }
     ]

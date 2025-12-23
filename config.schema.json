@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "pluginAlias": "OctopusEnergyPlatform",
+  "pluginAlias": "OctopusEnergy",
   "pluginType": "platform",
   "singular": false,
   "schema": {
