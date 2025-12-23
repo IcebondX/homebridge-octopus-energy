@@ -47,10 +47,13 @@
     ]
   },
   "dependencies": {
-    "homebridge": "^1.7.0",
     "node-fetch": "^2.6.11"
   },
+  "peerDependencies": {
+    "homebridge": ">=1.7.0"
+  },
   "devDependencies": {
+    "homebridge": "^1.7.0",
     "@types/node": "^20.14.2",
     "@types/node-fetch": "^2.6.11",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
