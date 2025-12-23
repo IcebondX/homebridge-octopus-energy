@@ -1,0 +1,71 @@
+﻿{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "pluginAlias": "OctopusEnergyPlatform",
+  "pluginType": "platform",
+  "singular": false,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "title": "Platform Name",
+        "default": "Octopus Energy"
+      },
+      "apiKey": {
+        "type": "string",
+        "title": "Octopus API Key",
+        "description": "Create an API key in your Octopus Energy account.",
+        "required": true
+      },
+      "pollSeconds": {
+        "type": "number",
+        "title": "Polling Interval (seconds)",
+        "default": 300,
+        "minimum": 60
+      },
+      "import": {
+        "type": "object",
+        "title": "Import Meter",
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Accessory Name",
+            "default": "Octopus Import"
+          },
+          "mpan": {
+            "type": "string",
+            "title": "MPAN",
+            "required": true
+          },
+          "meterSerial": {
+            "type": "string",
+            "title": "Meter Serial",
+            "required": true
+          }
+        },
+        "required": ["mpan", "meterSerial"]
+      },
+      "export": {
+        "type": "object",
+        "title": "Export Meter (optional)",
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Accessory Name",
+            "default": "Octopus Export"
+          },
+          "mpan": {
+            "type": "string",
+            "title": "MPAN"
+          },
+          "meterSerial": {
+            "type": "string",
+            "title": "Meter Serial"
+          }
+        }
+      }
+    },
+    "required": ["apiKey", "import"],
+    "additionalProperties": false
+  }
+}
